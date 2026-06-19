@@ -110,8 +110,13 @@ class TestDependencyResolverResolve:
         assert "nonexistent" in result.missing
 
     def test_already_installed(self, tmp_path: Path):
-        skill = Skill(name="installed-skill", version="1.0.0", description="d",
-                       installed=True, installed_agent="hermes")
+        skill = Skill(
+            name="installed-skill",
+            version="1.0.0",
+            description="d",
+            installed=True,
+            installed_agent="hermes",
+        )
         reg = _make_registry(tmp_path, {"installed-skill": skill})
         resolver = DependencyResolver(reg)
         result = resolver.resolve(["installed-skill"], "hermes")
@@ -158,8 +163,9 @@ class TestDependencyResolverResolve:
         assert any("a" in c and "b" in c for c in result.conflicts)
 
     def test_incompatible_agent(self, tmp_path: Path):
-        skill = Skill(name="platform", version="1.0.0", description="d",
-                       agent_compatibility=["claude_code"])
+        skill = Skill(
+            name="platform", version="1.0.0", description="d", agent_compatibility=["claude_code"]
+        )
         reg = _make_registry(tmp_path, {"platform": skill})
         resolver = DependencyResolver(reg)
         result = resolver.resolve(["platform"], "hermes")
@@ -167,8 +173,9 @@ class TestDependencyResolverResolve:
         assert "platform" not in result.to_install
 
     def test_compatible_agent(self, tmp_path: Path):
-        skill = Skill(name="platform", version="1.0.0", description="d",
-                       agent_compatibility=["hermes"])
+        skill = Skill(
+            name="platform", version="1.0.0", description="d", agent_compatibility=["hermes"]
+        )
         reg = _make_registry(tmp_path, {"platform": skill})
         resolver = DependencyResolver(reg)
         result = resolver.resolve(["platform"], "hermes")
@@ -183,8 +190,9 @@ class TestDependencyResolverResolve:
         assert result.to_install.count("dup") == 1
 
     def test_mixed_installed_and_new(self, tmp_path: Path):
-        installed = Skill(name="inst", version="1.0.0", description="d",
-                          installed=True, installed_agent="hermes")
+        installed = Skill(
+            name="inst", version="1.0.0", description="d", installed=True, installed_agent="hermes"
+        )
         new = Skill(name="new", version="1.0.0", description="d", requires=["inst"])
         reg = _make_registry(tmp_path, {"inst": installed, "new": new})
         resolver = DependencyResolver(reg)

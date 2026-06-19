@@ -2,16 +2,15 @@
 
 from __future__ import annotations
 
-import shutil
 import textwrap
 from pathlib import Path
 
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def sample_skill_path() -> Path:
@@ -28,6 +27,7 @@ def invalid_skill_path() -> Path:
 # ---------------------------------------------------------------------------
 # Skill data
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def sample_skill() -> dict:
@@ -66,6 +66,7 @@ def sample_skill() -> dict:
 # ---------------------------------------------------------------------------
 # Temporary directories
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def tmp_agentforge(tmp_path: Path) -> Path:

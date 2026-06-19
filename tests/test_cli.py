@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -242,8 +241,8 @@ class TestCLIInstall:
         assert result.exit_code != 0  # click requires at least one argument
 
     def test_install_dry_run(self, runner: CliRunner):
-        from agentforge.core.skill import Skill
         from agentforge.core.resolver import Resolution
+        from agentforge.core.skill import Skill
 
         mock_registry = MagicMock()
         mock_registry.get.return_value = Skill(name="s", version="1.0.0", description="d")

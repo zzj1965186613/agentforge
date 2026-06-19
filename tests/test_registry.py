@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from unittest.mock import patch
 
 import pytest
 
@@ -12,9 +11,15 @@ from agentforge.core.registry import SkillRegistry
 from agentforge.core.skill import Skill
 
 
-def _make_skill_file(path: Path, name: str = "test-skill", version: str = "1.0.0",
-                     description: str = "A test skill", category: str = "testing",
-                     tags: list[str] | None = None, body: str = "Body text") -> Path:
+def _make_skill_file(
+    path: Path,
+    name: str = "test-skill",
+    version: str = "1.0.0",
+    description: str = "A test skill",
+    category: str = "testing",
+    tags: list[str] | None = None,
+    body: str = "Body text",
+) -> Path:
     """Write a minimal valid skill .md file and return its path."""
     tags = tags or []
     tag_str = "[" + ", ".join(tags) + "]" if tags else "[]"
@@ -41,9 +46,7 @@ class TestSkillRegistryInit:
     """Test SkillRegistry initialisation."""
 
     def test_default_init_creates_registry(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
-        monkeypatch.setattr(
-            "agentforge.core.registry.user_data_dir", lambda: tmp_path / "data"
-        )
+        monkeypatch.setattr("agentforge.core.registry.user_data_dir", lambda: tmp_path / "data")
         reg = SkillRegistry()
         assert reg._base_path == tmp_path / "data"
 
@@ -71,9 +74,7 @@ class TestSkillRegistryScanBundled:
         _make_skill_file(skills_dir / "alpha.md", name="alpha")
         _make_skill_file(skills_dir / "beta.md", name="beta")
 
-        monkeypatch.setattr(
-            "agentforge.core.registry.bundled_skills_dir", lambda: skills_dir
-        )
+        monkeypatch.setattr("agentforge.core.registry.bundled_skills_dir", lambda: skills_dir)
         reg = SkillRegistry(base_path=tmp_path)
         loaded = reg.scan_bundled()
         names = {s.name for s in loaded}
@@ -86,9 +87,7 @@ class TestSkillRegistryScanBundled:
         _make_skill_file(skills_dir / "good.md", name="good")
         (skills_dir / "bad.md").write_text("no frontmatter here", encoding="utf-8")
 
-        monkeypatch.setattr(
-            "agentforge.core.registry.bundled_skills_dir", lambda: skills_dir
-        )
+        monkeypatch.setattr("agentforge.core.registry.bundled_skills_dir", lambda: skills_dir)
         reg = SkillRegistry(base_path=tmp_path)
         loaded = reg.scan_bundled()
         names = {s.name for s in loaded}
@@ -109,26 +108,22 @@ class TestSkillRegistryScanBundled:
         (skills_dir / "subdir").mkdir(parents=True)
         _make_skill_file(skills_dir / "subdir" / "nested.md", name="nested")
 
-        monkeypatch.setattr(
-            "agentforge.core.registry.bundled_skills_dir", lambda: skills_dir
-        )
+        monkeypatch.setattr("agentforge.core.registry.bundled_skills_dir", lambda: skills_dir)
         reg = SkillRegistry(base_path=tmp_path)
         loaded = reg.scan_bundled()
         assert any(s.name == "nested" for s in loaded)
 
-    def test_scan_does_not_overwrite_existing(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    def test_scan_no_overwrite_existing(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         """If a skill name is already registered, scan_bundled skips duplicates."""
         skills_dir = tmp_path / "skills"
         skills_dir.mkdir()
         _make_skill_file(skills_dir / "dup.md", name="dup")
 
-        monkeypatch.setattr(
-            "agentforge.core.registry.bundled_skills_dir", lambda: skills_dir
-        )
+        monkeypatch.setattr("agentforge.core.registry.bundled_skills_dir", lambda: skills_dir)
         reg = SkillRegistry(base_path=tmp_path)
         # Manually add a skill with name "dup"
         reg._skills["dup"] = Skill(name="dup", version="0.0.0", description="original")
-        loaded = reg.scan_bundled()
+        reg.scan_bundled()
         # Should not overwrite
         assert reg._skills["dup"].version == "0.0.0"
 
@@ -149,9 +144,7 @@ class TestSkillRegistryScanInstalled:
 
         # Write registry index
         reg = SkillRegistry(base_path=tmp_path)
-        reg._install_index = {
-            "installed-skill": {"hermes": {"path": str(skill_dir / "inst.md")}}
-        }
+        reg._install_index = {"installed-skill": {"hermes": {"path": str(skill_dir / "inst.md")}}}
         loaded = reg.scan_installed()
         assert len(loaded) == 1
         assert loaded[0].name == "installed-skill"
@@ -160,9 +153,7 @@ class TestSkillRegistryScanInstalled:
 
     def test_scan_installed_missing_file(self, tmp_path: Path):
         reg = SkillRegistry(base_path=tmp_path)
-        reg._install_index = {
-            "ghost": {"hermes": {"path": str(tmp_path / "ghost.md")}}
-        }
+        reg._install_index = {"ghost": {"hermes": {"path": str(tmp_path / "ghost.md")}}}
         loaded = reg.scan_installed()
         assert loaded == []
 
@@ -179,16 +170,29 @@ class TestSkillRegistryLookup:
         """Create a registry with a few skills for lookup tests."""
         skills_dir = tmp_path / "skills"
         skills_dir.mkdir()
-        _make_skill_file(skills_dir / "a.md", name="alpha", description="The first skill",
-                         category="core", tags=["essential", "basic"])
-        _make_skill_file(skills_dir / "b.md", name="beta", description="A beta skill",
-                         category="experimental", tags=["beta", "new"])
-        _make_skill_file(skills_dir / "c.md", name="gamma", description="Third letter",
-                         category="core", tags=["basic"])
-
-        monkeypatch.setattr(
-            "agentforge.core.registry.bundled_skills_dir", lambda: skills_dir
+        _make_skill_file(
+            skills_dir / "a.md",
+            name="alpha",
+            description="The first skill",
+            category="core",
+            tags=["essential", "basic"],
         )
+        _make_skill_file(
+            skills_dir / "b.md",
+            name="beta",
+            description="A beta skill",
+            category="experimental",
+            tags=["beta", "new"],
+        )
+        _make_skill_file(
+            skills_dir / "c.md",
+            name="gamma",
+            description="Third letter",
+            category="core",
+            tags=["basic"],
+        )
+
+        monkeypatch.setattr("agentforge.core.registry.bundled_skills_dir", lambda: skills_dir)
         reg = SkillRegistry(base_path=tmp_path)
         reg.scan_bundled()
         reg._loaded = True
@@ -354,9 +358,7 @@ class TestSkillRegistryLoad:
         skills_dir.mkdir()
         _make_skill_file(skills_dir / "s.md", name="loadable")
 
-        monkeypatch.setattr(
-            "agentforge.core.registry.bundled_skills_dir", lambda: skills_dir
-        )
+        monkeypatch.setattr("agentforge.core.registry.bundled_skills_dir", lambda: skills_dir)
         reg = SkillRegistry(base_path=tmp_path)
         reg.load()
         assert "loadable" in reg._skills

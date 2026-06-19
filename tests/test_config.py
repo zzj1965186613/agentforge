@@ -9,7 +9,6 @@ import yaml
 
 from agentforge.core.config import AgentForgeConfig
 
-
 # ---------------------------------------------------------------------------
 # Defaults
 # ---------------------------------------------------------------------------
@@ -78,9 +77,7 @@ class TestConfigLoad:
         assert cfg.default_agent == ""  # fallback to defaults
 
     def test_load_default_path(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
-        monkeypatch.setattr(
-            "agentforge.core.config.user_data_dir", lambda: tmp_path / "data"
-        )
+        monkeypatch.setattr("agentforge.core.config.user_data_dir", lambda: tmp_path / "data")
         cfg_dir = tmp_path / "data"
         cfg_dir.mkdir(parents=True)
         data = {"default_agent": "from-default-path"}
@@ -89,9 +86,7 @@ class TestConfigLoad:
         assert cfg.default_agent == "from-default-path"
 
     def test_load_default_path_nonexistent(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
-        monkeypatch.setattr(
-            "agentforge.core.config.user_data_dir", lambda: tmp_path / "nodir"
-        )
+        monkeypatch.setattr("agentforge.core.config.user_data_dir", lambda: tmp_path / "nodir")
         cfg = AgentForgeConfig.load()
         assert cfg.default_agent == ""
 
@@ -130,9 +125,7 @@ class TestConfigSave:
 
     def test_save_default_path(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         data_dir = tmp_path / "data"
-        monkeypatch.setattr(
-            "agentforge.core.config.user_data_dir", lambda: data_dir
-        )
+        monkeypatch.setattr("agentforge.core.config.user_data_dir", lambda: data_dir)
         cfg = AgentForgeConfig(default_agent="default-save")
         cfg.save()
         assert (data_dir / "config.yml").exists()

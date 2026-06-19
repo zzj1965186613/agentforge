@@ -2,10 +2,7 @@
 
 from __future__ import annotations
 
-import pytest
-
 from agentforge.utils.markdown import parse_frontmatter, render_variables
-
 
 # ---------------------------------------------------------------------------
 # parse_frontmatter
@@ -60,13 +57,7 @@ class TestParseFrontmatter:
         assert "Key: Value" in body
 
     def test_frontmatter_with_complex_values(self):
-        content = (
-            "---\n"
-            "name: complex\n"
-            "nested:\n"
-            "  key: value\n"
-            "---\n\nBody"
-        )
+        content = "---\nname: complex\nnested:\n  key: value\n---\n\nBody"
         meta, body = parse_frontmatter(content)
         assert meta["name"] == "complex"
         assert meta["nested"]["key"] == "value"

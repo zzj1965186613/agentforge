@@ -8,7 +8,6 @@ import pytest
 
 from agentforge.core.skill import Skill, SkillVariable
 
-
 # ---------------------------------------------------------------------------
 # SkillVariable
 # ---------------------------------------------------------------------------
@@ -32,12 +31,14 @@ class TestSkillVariable:
         assert v.required is False
 
     def test_from_dict_full(self):
-        v = SkillVariable.from_dict({
-            "name": "bar",
-            "description": "A bar variable",
-            "default": "baz",
-            "required": True,
-        })
+        v = SkillVariable.from_dict(
+            {
+                "name": "bar",
+                "description": "A bar variable",
+                "default": "baz",
+                "required": True,
+            }
+        )
         assert v.name == "bar"
         assert v.description == "A bar variable"
         assert v.default == "baz"
@@ -88,7 +89,9 @@ class TestSkillFromString:
         assert skill.tags == ["a", "b", "c"]
 
     def test_requires_as_list(self):
-        content = "---\nname: s\nversion: 1.0.0\ndescription: d\nrequires: [dep1, dep2]\n---\n\nBody"
+        content = (
+            "---\nname: s\nversion: 1.0.0\ndescription: d\nrequires: [dep1, dep2]\n---\n\nBody"
+        )
         skill = Skill.from_string(content)
         assert skill.requires == ["dep1", "dep2"]
 
@@ -353,6 +356,7 @@ class TestSkillSerialization:
     def test_to_dict_serializable(self):
         """to_dict output should be JSON-serializable."""
         import json
+
         skill = Skill(name="test", version="1.0.0", description="d")
         d = skill.to_dict()
         json.dumps(d)  # should not raise
@@ -388,7 +392,13 @@ class TestSkillSerialization:
         assert skill.installed_path == tmp_path / "dst.md"
 
     def test_installed_flag_roundtrip(self):
-        skill = Skill(name="t", version="1.0.0", description="d", installed=True, installed_agent="hermes")
+        skill = Skill(
+            name="t",
+            version="1.0.0",
+            description="d",
+            installed=True,
+            installed_agent="hermes",
+        )
         d = skill.to_dict()
         assert d["installed"] is True
         assert d["installed_agent"] == "hermes"

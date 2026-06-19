@@ -12,10 +12,11 @@ from agentforge.core.registry import SkillRegistry
 from agentforge.core.skill import Skill
 
 
-def _make_skill_file(path: Path, name: str = "test-skill", version: str = "1.0.0",
-                     description: str = "A test skill") -> Path:
+def _make_skill_file(
+    path: Path, name: str = "test-skill", version: str = "1.0.0", description: str = "A test skill"
+) -> Path:
     content = (
-        f"---\nname: {name}\nversion: \"{version}\"\n"
+        f'---\nname: {name}\nversion: "{version}"\n'
         f'description: "{description}"\n---\n\nBody of {name}\n'
     )
     path.write_text(content, encoding="utf-8")
@@ -100,14 +101,11 @@ class TestInstallerInstall:
         skill = Skill.from_file(src)
         monkeypatch.setattr(
             "agentforge.core.installer.SkillInstaller._resolve_dest_dir",
-            lambda self, agent, pp, gi: tmp_path / "global-inst" / agent / "skills"
-            if gi else None
+            lambda self, agent, pp, gi: tmp_path / "global-inst" / agent / "skills" if gi else None,
         )
         # Instead, let's just test with a project_path and global_install=True
         # The _resolve_dest_dir will use user_data_dir() for global
-        monkeypatch.setattr(
-            "agentforge.utils.paths.user_data_dir", lambda: tmp_path / "userdata"
-        )
+        monkeypatch.setattr("agentforge.utils.paths.user_data_dir", lambda: tmp_path / "userdata")
         reg = _make_registry(tmp_path)
         installer = SkillInstaller(registry=reg)
         result = installer.install(skill, "hermes", global_install=True)
