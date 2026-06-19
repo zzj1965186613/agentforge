@@ -1,26 +1,9 @@
 """agentforge search — Search for skills by query, category, or tag."""
 
 import click
-from rich.console import Console
 from rich.table import Table
 
-console = Console()
-
-try:
-    from agentforge.core.registry import SkillRegistry
-except ImportError:
-    SkillRegistry = None  # type: ignore[assignment,misc]
-
-
-def _get_registry():
-    """Return a SkillRegistry instance or None if core is missing."""
-    if SkillRegistry is None:
-        console.print(
-            "[bold red]Error:[/] agentforge.core is not available yet. "
-            "The core module is under development."
-        )
-        return None
-    return SkillRegistry()
+from agentforge.cli._utils import console, get_registry
 
 
 @click.command("search")
@@ -31,7 +14,7 @@ def _get_registry():
 def search(ctx: click.Context, query: str, category: str | None, tag: str | None) -> None:
     """Search for skills by QUERY across name, description, and tags."""
     verbose = ctx.obj.get("verbose", False) if ctx.obj else False
-    registry = _get_registry()
+    registry = get_registry()
     if registry is None:
         return
 
@@ -53,17 +36,20 @@ def search(ctx: click.Context, query: str, category: str | None, tag: str | None
     table.add_column("Description", max_width=50)
 
     if verbose:
+        from agentforge.core.registry import SkillRegistry
+
         table.add_column("Score", style="dim", justify="right")
 
     for skill in results:
         tags = ", ".join(skill.tags) if skill.tags else "—"
-        desc = skill.description[:47] + "..." if len(skill.description) > 50 else skill.description
+        desc = skill.description or ""
+        desc_trunc = desc[:47] + "..." if len(desc) > 50 else desc
 
         if verbose:
             score = SkillRegistry._score(skill, query.lower())
-            table.add_row(skill.name, skill.version, skill.category, tags, desc, str(score))
+            table.add_row(skill.name, skill.version, skill.category, tags, desc_trunc, str(score))
         else:
-            table.add_row(skill.name, skill.version, skill.category, tags, desc)
+            table.add_row(skill.name, skill.version, skill.category, tags, desc_trunc)
 
     console.print(table)
     console.print(f"\n[dim]{len(results)} result(s) found.[/]")

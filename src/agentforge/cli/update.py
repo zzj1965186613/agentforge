@@ -112,7 +112,8 @@ def _update_all(
     verbose: bool,
 ) -> None:
     """Reinstall all currently installed skills."""
-    installed = registry.scan_installed()
+    # Use all_skills() + filter instead of direct scan_installed()
+    installed = [s for s in registry.all_skills() if s.installed]
     if not installed:
         console.print("[yellow]No installed skills found.[/]")
         return
@@ -143,7 +144,8 @@ def _show_update_check(
     verbose: bool,
 ) -> None:
     """Compare installed skill versions against the bundled registry."""
-    installed = registry.scan_installed()
+    # Use all_skills() + filter instead of direct scan_installed()
+    installed = [s for s in registry.all_skills() if s.installed]
     if not installed:
         console.print("[yellow]No installed skills found.[/]")
         return

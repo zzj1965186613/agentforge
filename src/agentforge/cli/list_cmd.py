@@ -4,26 +4,9 @@ import json
 import time
 
 import click
-from rich.console import Console
 from rich.table import Table
 
-console = Console()
-
-try:
-    from agentforge.core.registry import SkillRegistry
-except ImportError:
-    SkillRegistry = None  # type: ignore[assignment,misc]
-
-
-def _get_registry():
-    """Return a SkillRegistry instance or None if core is missing."""
-    if SkillRegistry is None:
-        console.print(
-            "[bold red]Error:[/] agentforge.core is not available yet. "
-            "The core module is under development."
-        )
-        return None
-    return SkillRegistry()
+from agentforge.cli._utils import console, get_registry
 
 
 @click.command("list")
@@ -62,13 +45,14 @@ def list_cmd(
 ) -> None:
     """List available or installed skills."""
     verbose = ctx.obj.get("verbose", False) if ctx.obj else False
-    registry = _get_registry()
+    registry = get_registry()
     if registry is None:
         return
 
     try:
         t0 = time.monotonic()
-        skills = registry.scan_installed() if installed else registry.all_skills()
+        all_skills = registry.all_skills()  # triggers lazy load once
+        skills = [s for s in all_skills if s.installed] if installed else all_skills
         scan_elapsed = time.monotonic() - t0
 
         # Apply filters
@@ -113,11 +97,12 @@ def list_cmd(
     table.add_column("Installed", justify="center")
 
     for skill in skills:
+        desc = skill.description or ""
         table.add_row(
             skill.name,
             skill.version,
             skill.category,
-            skill.description[:57] + "..." if len(skill.description) > 60 else skill.description,
+            desc[:57] + "..." if len(desc) > 60 else desc,
             "✓" if skill.installed else "✗",
         )
 

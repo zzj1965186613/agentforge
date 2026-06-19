@@ -42,6 +42,7 @@ def bundled_skills_dir() -> Path:
     import importlib.resources as pkg_resources
 
     # Try importlib.resources first (works for installed wheels)
+    resolved = None
     try:
         ref = pkg_resources.files("agentforge") / "skills"
         resolved = Path(str(ref))
@@ -56,4 +57,8 @@ def bundled_skills_dir() -> Path:
         return dev_path
 
     # Last resort: return the importlib path even if it doesn't exist yet
-    return resolved
+    if resolved is not None:
+        return resolved
+
+    # Absolute last resort: return a conventional path relative to this file
+    return Path(__file__).resolve().parent.parent.parent.parent / "skills"

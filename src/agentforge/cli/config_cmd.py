@@ -1,10 +1,11 @@
 """agentforge config — Manage AgentForge configuration."""
 
+import dataclasses
+
 import click
-from rich.console import Console
 from rich.table import Table
 
-console = Console()
+from agentforge.cli._utils import console
 
 try:
     from agentforge.core.config import AgentForgeConfig
@@ -27,18 +28,18 @@ def config() -> None:
 @config.command("show")
 def config_show() -> None:
     """Show current configuration."""
-    config = _get_config()
-    if config is None:
+    cfg = _get_config()
+    if cfg is None:
         return
 
     table = Table(title="AgentForge Configuration")
     table.add_column("Key", style="cyan bold")
     table.add_column("Value", style="green")
-    table.add_row("default_agent", str(config.default_agent or "(not set)"))
-    table.add_row("default_global", str(config.default_global))
-    table.add_row("preferred_categories", ", ".join(config.preferred_categories) or "(none)")
-    table.add_row("auto_update", str(config.auto_update))
-    table.add_row("editor", str(config.editor or "(not set)"))
+    table.add_row("default_agent", str(cfg.default_agent or "(not set)"))
+    table.add_row("default_global", str(cfg.default_global))
+    table.add_row("preferred_categories", ", ".join(cfg.preferred_categories) or "(none)")
+    table.add_row("auto_update", str(cfg.auto_update))
+    table.add_row("editor", str(cfg.editor or "(not set)"))
     console.print(table)
 
 
@@ -47,25 +48,32 @@ def config_show() -> None:
 @click.argument("value")
 def config_set(key: str, value: str) -> None:
     """Set a configuration KEY to VALUE."""
-    config = _get_config()
-    if config is None:
+    cfg = _get_config()
+    if cfg is None:
         return
 
-    if hasattr(config, key):
-        current = getattr(config, key)
-        if isinstance(current, bool):
-            converted = value.lower() in ("true", "1", "yes")
-        elif isinstance(current, list):
-            converted = [v.strip() for v in value.split(",") if v.strip()]
-        elif isinstance(current, int):
-            converted = int(value)
-        else:
-            converted = value
-        setattr(config, key, converted)
-        config.save()
-        console.print(f"[green]✓[/] Set {key} = {value}")
-    else:
+    valid_keys = {f.name for f in dataclasses.fields(cfg)}
+    if key not in valid_keys:
         console.print(f"[red]✗[/] Unknown config key: {key}")
+        console.print(f"[dim]Valid keys: {', '.join(sorted(valid_keys))}[/]")
+        return
+
+    current = getattr(cfg, key)
+    if isinstance(current, bool):
+        converted = value.lower() in ("true", "1", "yes")
+    elif isinstance(current, list):
+        converted = [v.strip() for v in value.split(",") if v.strip()]
+    elif isinstance(current, int):
+        try:
+            converted = int(value)
+        except ValueError:
+            console.print(f"[red]Error:[/] '{value}' is not a valid integer for '{key}'")
+            return
+    else:
+        converted = value
+    setattr(cfg, key, converted)
+    cfg.save()
+    console.print(f"[green]✓[/] Set {key} = {value}")
 
 
 @config.command("reset")
@@ -74,6 +82,6 @@ def config_reset() -> None:
     if AgentForgeConfig is None:
         console.print("[bold red]Error:[/] agentforge.core is not available yet.")
         return
-    config = AgentForgeConfig()
-    config.save()
+    cfg = AgentForgeConfig()
+    cfg.save()
     console.print("[green]✓[/] Configuration reset to defaults.")

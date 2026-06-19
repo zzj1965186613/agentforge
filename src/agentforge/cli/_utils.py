@@ -42,3 +42,16 @@ def get_installer() -> tuple | None:
     except ImportError:
         pass
     return SkillInstaller(registry, adapters), registry
+
+
+def get_registry():
+    """Return a SkillRegistry instance or None if core is missing."""
+    try:
+        from agentforge.core.registry import SkillRegistry
+    except ImportError:
+        console.print(
+            "[bold red]Error:[/] agentforge.core is not available yet. "
+            "The core module is under development."
+        )
+        return None
+    return SkillRegistry()

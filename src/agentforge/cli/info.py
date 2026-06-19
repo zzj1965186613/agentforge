@@ -1,23 +1,10 @@
 """agentforge info — Show detailed information about a skill."""
 
 import click
-from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
 
-console = Console()
-
-try:
-    from agentforge.core.registry import SkillRegistry
-except ImportError:
-    SkillRegistry = None  # type: ignore[assignment,misc]
-
-
-def _get_registry():
-    if SkillRegistry is None:
-        console.print("[bold red]Error:[/] agentforge.core is not available yet.")
-        return None
-    return SkillRegistry()
+from agentforge.cli._utils import console, get_registry
 
 
 @click.command("info")
@@ -25,7 +12,7 @@ def _get_registry():
 @click.pass_context
 def info(ctx: click.Context, skill_name: str) -> None:
     """Show detailed information about SKILL_NAME."""
-    registry = _get_registry()
+    registry = get_registry()
     if registry is None:
         return
 

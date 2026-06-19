@@ -197,7 +197,10 @@ class SkillRegistry:
         """Persist the install index to disk."""
         path = self._registry_path()
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(self._install_index, indent=2), encoding="utf-8")
+        try:
+            path.write_text(json.dumps(self._install_index, indent=2), encoding="utf-8")
+        except OSError:
+            logger.warning("Failed to save registry index to %s", path, exc_info=True)
 
     def _load_from_registry_index(self) -> None:
         """Load install index from disk (called on init)."""
@@ -217,6 +220,4 @@ class SkillRegistry:
         self._skills.clear()
         self._loaded = False
         self._load_from_registry_index()
-        self.scan_bundled()
-        self.scan_installed()
-        self._loaded = True
+        self._ensure_loaded()  # single entry point for scanning

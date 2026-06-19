@@ -3,9 +3,8 @@
 from pathlib import Path
 
 import click
-from rich.console import Console
 
-console = Console()
+from agentforge.cli._utils import console
 
 try:
     from agentforge.core.config import AgentForgeConfig
@@ -17,7 +16,7 @@ except ImportError:
 @click.option(
     "--agent",
     "-a",
-    type=click.Choice(["claude-code", "cursor", "copilot", "aider", "hermes"]),
+    type=click.Choice(["claude_code", "cursor", "copilot", "aider", "hermes"]),
     default=None,
     help="Target agent.",
 )
@@ -36,7 +35,7 @@ def init(ctx: click.Context, agent: str | None, project_path: str) -> None:
         else:
             agent = click.prompt(
                 "Select agent",
-                type=click.Choice(["claude-code", "cursor", "copilot", "aider", "hermes"]),
+                type=click.Choice(["claude_code", "cursor", "copilot", "aider", "hermes"]),
             )
 
     # Create .agentforge directory
@@ -56,7 +55,7 @@ def init(ctx: click.Context, agent: str | None, project_path: str) -> None:
 def _detect_agent(project: Path) -> str | None:
     """Auto-detect which agent is configured in the project."""
     if (project / ".claude").is_dir():
-        return "claude-code"
+        return "claude_code"
     if (project / ".cursor").is_dir() or (project / ".cursorrules").exists():
         return "cursor"
     if (project / ".github" / "copilot-instructions.md").exists():

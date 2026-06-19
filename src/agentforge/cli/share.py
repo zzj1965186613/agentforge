@@ -1,14 +1,8 @@
 """agentforge share — Export or share a custom skill."""
 
 import click
-from rich.console import Console
 
-console = Console()
-
-try:
-    from agentforge.core.registry import SkillRegistry
-except ImportError:
-    SkillRegistry = None  # type: ignore[assignment,misc]
+from agentforge.cli._utils import console, get_registry
 
 
 @click.command("share")
@@ -18,11 +12,10 @@ except ImportError:
 @click.pass_context
 def share(ctx: click.Context, skill_name: str, output: str | None, gist: bool) -> None:
     """Export or share SKILL_NAME."""
-    if SkillRegistry is None:
-        console.print("[bold red]Error:[/] agentforge.core is not available yet.")
+    registry = get_registry()
+    if registry is None:
         return
 
-    registry = SkillRegistry()
     skill = registry.get(skill_name)
     if skill is None:
         console.print(f"[red]Skill not found:[/] {skill_name}")
@@ -30,7 +23,11 @@ def share(ctx: click.Context, skill_name: str, output: str | None, gist: bool) -
 
     # Read the full skill file content
     if skill.source_path and skill.source_path.exists():
-        content = skill.source_path.read_text(encoding="utf-8")
+        try:
+            content = skill.source_path.read_text(encoding="utf-8")
+        except OSError as exc:
+            console.print(f"[red]Error reading skill file:[/] {exc}")
+            return
     else:
         console.print(f"[red]Could not read skill source for:[/] {skill_name}")
         return
@@ -38,8 +35,11 @@ def share(ctx: click.Context, skill_name: str, output: str | None, gist: bool) -
     if output:
         from pathlib import Path
 
-        Path(output).write_text(content, encoding="utf-8")
-        console.print(f"[green]✓[/] Skill exported to {output}")
+        try:
+            Path(output).write_text(content, encoding="utf-8")
+            console.print(f"[green]✓[/] Skill exported to {output}")
+        except OSError as exc:
+            console.print(f"[red]Error writing file:[/] {exc}")
     elif gist:
         import subprocess
 

@@ -65,7 +65,10 @@ class SkillCache:
     def _load_meta(self) -> dict[str, Any]:
         """Load cache metadata from disk."""
         if self._meta_path.exists():
-            return json.loads(self._meta_path.read_text(encoding="utf-8"))
+            try:
+                return json.loads(self._meta_path.read_text(encoding="utf-8"))
+            except (json.JSONDecodeError, OSError):
+                logger.warning("Corrupt cache metadata at %s; resetting.", self._meta_path)
         return {"entries": {}}
 
     def _save_meta(self, meta: dict[str, Any]) -> None:

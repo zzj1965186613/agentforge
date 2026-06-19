@@ -146,7 +146,14 @@ class SkillInstaller:
 
         # Write to destination
         dest_dir.mkdir(parents=True, exist_ok=True)
-        dest_file.write_text(rendered_file, encoding="utf-8")
+        try:
+            dest_file.write_text(rendered_file, encoding="utf-8")
+        except OSError as exc:
+            return InstallResult(
+                success=False,
+                skill_name=name,
+                message=f"Failed to write skill file: {exc}",
+            )
 
         # Register the install
         self.registry.register_install(skill, agent, dest_file)
@@ -182,7 +189,14 @@ class SkillInstaller:
                 message=f"Skill '{skill_name}' not found at {dest_file}",
             )
 
-        dest_file.unlink()
+        try:
+            dest_file.unlink()
+        except OSError as exc:
+            return InstallResult(
+                success=False,
+                skill_name=skill_name,
+                message=f"Failed to delete skill file: {exc}",
+            )
         self.registry.unregister_install(skill_name, agent)
 
         return InstallResult(

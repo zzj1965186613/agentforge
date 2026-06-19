@@ -66,7 +66,7 @@ class TestCLIList:
         mock_registry._skills = {"test-skill": mock_skill}
         mock_registry.scan_installed.return_value = [mock_skill]
 
-        with patch("agentforge.cli.list_cmd._get_registry", return_value=mock_registry):
+        with patch("agentforge.cli.list_cmd.get_registry", return_value=mock_registry):
             result = runner.invoke(cli, ["list"])
             assert result.exit_code == 0
 
@@ -84,7 +84,7 @@ class TestCLIList:
         mock_registry.all_skills.return_value = [mock_skill]
         mock_registry.scan_installed.return_value = [mock_skill]
 
-        with patch("agentforge.cli.list_cmd._get_registry", return_value=mock_registry):
+        with patch("agentforge.cli.list_cmd.get_registry", return_value=mock_registry):
             result = runner.invoke(cli, ["list", "--format", "json"])
             assert result.exit_code == 0
             assert "json-skill" in result.output
@@ -98,7 +98,7 @@ class TestCLIList:
         mock_registry.all_skills.return_value = [mock_skill]
         mock_registry.scan_installed.return_value = [mock_skill]
 
-        with patch("agentforge.cli.list_cmd._get_registry", return_value=mock_registry):
+        with patch("agentforge.cli.list_cmd.get_registry", return_value=mock_registry):
             result = runner.invoke(cli, ["list", "--format", "names"])
             assert result.exit_code == 0
             assert "name-skill" in result.output
@@ -109,13 +109,13 @@ class TestCLIList:
         mock_registry.all_skills.return_value = []
         mock_registry.scan_installed.return_value = []
 
-        with patch("agentforge.cli.list_cmd._get_registry", return_value=mock_registry):
+        with patch("agentforge.cli.list_cmd.get_registry", return_value=mock_registry):
             result = runner.invoke(cli, ["list"])
             assert result.exit_code == 0
             assert "No skills found" in result.output
 
     def test_list_core_unavailable(self, runner: CliRunner):
-        with patch("agentforge.cli.list_cmd._get_registry", return_value=None):
+        with patch("agentforge.cli.list_cmd.get_registry", return_value=None):
             result = runner.invoke(cli, ["list"])
             assert result.exit_code == 0
 
@@ -146,7 +146,7 @@ class TestCLISearch:
         mock_registry = MagicMock()
         mock_registry.search.return_value = [mock_skill]
 
-        with patch("agentforge.cli.search._get_registry", return_value=mock_registry):
+        with patch("agentforge.cli.search.get_registry", return_value=mock_registry):
             result = runner.invoke(cli, ["search", "found"])
             assert result.exit_code == 0
             assert "found-skill" in result.output
@@ -155,7 +155,7 @@ class TestCLISearch:
         mock_registry = MagicMock()
         mock_registry.search.return_value = []
 
-        with patch("agentforge.cli.search._get_registry", return_value=mock_registry):
+        with patch("agentforge.cli.search.get_registry", return_value=mock_registry):
             result = runner.invoke(cli, ["search", "nothing"])
             assert result.exit_code == 0
             assert "No skills found" in result.output
@@ -164,13 +164,13 @@ class TestCLISearch:
         mock_registry = MagicMock()
         mock_registry.search.return_value = []
 
-        with patch("agentforge.cli.search._get_registry", return_value=mock_registry):
+        with patch("agentforge.cli.search.get_registry", return_value=mock_registry):
             result = runner.invoke(cli, ["search", "test", "--category", "core"])
             assert result.exit_code == 0
             mock_registry.search.assert_called_once_with(query="test", category="core", tag="")
 
     def test_search_core_unavailable(self, runner: CliRunner):
-        with patch("agentforge.cli.search._get_registry", return_value=None):
+        with patch("agentforge.cli.search.get_registry", return_value=None):
             result = runner.invoke(cli, ["search", "test"])
             assert result.exit_code == 0
 
@@ -203,7 +203,7 @@ class TestCLIInfo:
         mock_registry = MagicMock()
         mock_registry.get.return_value = mock_skill
 
-        with patch("agentforge.cli.info._get_registry", return_value=mock_registry):
+        with patch("agentforge.cli.info.get_registry", return_value=mock_registry):
             result = runner.invoke(cli, ["info", "info-skill"])
             assert result.exit_code == 0
             assert "info-skill" in result.output
@@ -212,13 +212,13 @@ class TestCLIInfo:
         mock_registry = MagicMock()
         mock_registry.get.return_value = None
 
-        with patch("agentforge.cli.info._get_registry", return_value=mock_registry):
+        with patch("agentforge.cli.info.get_registry", return_value=mock_registry):
             result = runner.invoke(cli, ["info", "missing"])
             assert result.exit_code == 0
             assert "not found" in result.output.lower()
 
     def test_info_core_unavailable(self, runner: CliRunner):
-        with patch("agentforge.cli.info._get_registry", return_value=None):
+        with patch("agentforge.cli.info.get_registry", return_value=None):
             result = runner.invoke(cli, ["info", "test"])
             assert result.exit_code == 0
 
